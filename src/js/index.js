@@ -94,7 +94,7 @@ import './components/clipboard-copy.js';
       const barcode = await barcodeReader.detect(capturePhotoVideoEl);
       const barcodeValue = barcode?.rawValue ?? '';
 
-      if (!barcodeValue) {
+      if (!barcodeValue || !isValidCardNumber(barcodeValue)) {
         throw new Error(NO_BARCODE_DETECTED);
       }
 
@@ -452,6 +452,42 @@ import './components/clipboard-copy.js';
       handleDocumentEscapeKey();
     }
   }
+
+  function is16DigitString(cardNumber) {
+    return /^\d{16}$/.test(cardNumber);
+}
+
+
+function isLuhnValid(cardNumber) {
+    let sum = 0;
+    let shouldDouble = false;
+
+    // Traverse the string from right to left
+    for (let i = cardNumber.length - 1; i >= 0; i--) {
+        let digit = parseInt(cardNumber.charAt(i), 10);
+
+        if (shouldDouble) {
+            digit *= 2;
+            if (digit > 9) {
+                digit -= 9; // Equivalent to summing the digits of the doubled value
+            }
+        }
+
+        sum += digit;
+        shouldDouble = !shouldDouble;
+    }
+
+    // The sum must be a multiple of 10
+    return (sum % 10 === 0);
+}
+
+function isLastDigitZero(cardNumber) {
+  return cardNumber.charAt(cardNumber.length - 1) === '0';
+}
+
+function isValidCardNumber(cardNumber) {
+  return is16DigitString(cardNumber) && (isLuhnValid(cardNumber) || isLastDigitZero(cardNumber));
+}
 
   scanBtn.addEventListener('click', handleScanButtonClick);
   tabGroupEl.addEventListener('a-tab-show', debounce(handleTabShow, 250));

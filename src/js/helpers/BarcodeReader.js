@@ -36,7 +36,9 @@ class BarcodeReader {
    */
   static async create() {
     const formats = await window.BarcodeDetector.getSupportedFormats();
-    return new BarcodeReader(formats);
+    log("Supported formats:" + formats);
+    log("Only use code_39:");
+    return new BarcodeReader(["code_39"]);
   }
 
   /**
